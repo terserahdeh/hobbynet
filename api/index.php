@@ -1,5 +1,7 @@
 <?php
 
+$basePath = dirname(__DIR__);
+
 $runtimePaths = [
     'APP_CONFIG_CACHE'   => '/tmp/config.php',
     'APP_EVENTS_CACHE'   => '/tmp/events.php',
@@ -9,7 +11,6 @@ $runtimePaths = [
     'VIEW_COMPILED_PATH' => '/tmp/laravel-views',
     'LOG_CHANNEL'        => 'stderr',
     'CACHE_STORE'        => 'array',
-    'CACHE_DRIVER'       => 'array',
     'SESSION_DRIVER'     => 'cookie',
     'QUEUE_CONNECTION'   => 'sync',
 ];
@@ -20,8 +21,20 @@ foreach ($runtimePaths as $key => $value) {
     $_SERVER[$key] = $value;
 }
 
-if (!is_dir('/tmp/laravel-views')) {
-    mkdir('/tmp/laravel-views', 0777, true);
+foreach ([
+    '/tmp/laravel-views',
+    '/tmp/laravel-cache',
+    '/tmp/laravel-sessions',
+] as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0777, true);
+    }
 }
 
-require __DIR__ . '/../public/index.php';
+require $basePath . '/vendor/autoload.php';
+
+$app = require $basePath . '/bootstrap/app.php';
+
+$app->handleRequest(
+    Illuminate\Http\Request::capture()
+);
